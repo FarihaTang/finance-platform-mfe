@@ -35,6 +35,67 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   );
 };
 
+const useExchangeRates = () => {
+  const [rates, setRates] = React.useState<{ CNY: number; USD: number } | null>(null);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState(false);
+
+  React.useEffect(() => {
+    fetch('https://api.exchangerate-api.com/v4/latest/GBP')
+      .then(res => res.json())
+      .then(data => {
+        setRates({ CNY: data.rates.CNY, USD: data.rates.USD });
+        setLoading(false);
+      })
+      .catch(() => {
+        setError(true);
+        setLoading(false);
+      });
+  }, []);
+
+  return { rates, loading, error };
+};
+
+const ExchangeRateCard: React.FC = () => {
+  const { rates, loading, error } = useExchangeRates();
+
+  return (
+    <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-white font-semibold">Live Exchange Rates</h2>
+        <span className="text-xs text-white/30">GBP base · live</span>
+      </div>
+
+      {loading && (
+        <div className="flex items-center gap-2 text-white/40 text-sm">
+          <div className="w-4 h-4 border border-white/20 border-t-emerald-400 rounded-full animate-spin" />
+          Fetching rates...
+        </div>
+      )}
+
+      {error && <p className="text-red-400/70 text-sm">Failed to load rates. Please try again.</p>}
+
+      {rates && (
+        <div className="grid grid-cols-2 gap-4">
+          {[
+            { pair: 'GBP / USD', rate: rates.USD, flag: '🇺🇸' },
+            { pair: 'GBP / CNY', rate: rates.CNY, flag: '🇨🇳' },
+          ].map(({ pair, rate, flag }) => (
+            <div key={pair} className="bg-white/5 rounded-xl p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <span>{flag}</span>
+                <span className="text-white/50 text-xs">{pair}</span>
+              </div>
+              <p className="text-white text-xl font-bold">{rate.toFixed(4)}</p>
+              <p className="text-emerald-400/60 text-xs mt-1">1 GBP =</p>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
 const OverviewPage: React.FC = () => {
   const user = useUserStore(s => s.user);
   return (
@@ -44,7 +105,7 @@ const OverviewPage: React.FC = () => {
       </h1>
       <p className="text-white/50 mb-8">Here's your financial overview.</p>
 
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-3 gap-4 mb-6">
         {[
           { label: 'Total Balance', value: '£24,521.00', change: '+2.4%' },
           { label: 'Monthly Spend', value: '£1,842.50', change: '-8.1%' },
@@ -58,7 +119,11 @@ const OverviewPage: React.FC = () => {
         ))}
       </div>
 
-      <div className="mt-8 bg-white/5 border border-white/10 rounded-2xl p-6">
+      <div className="mb-6">
+        <ExchangeRateCard />
+      </div>
+
+      <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
         <h2 className="text-white font-semibold mb-3">Quick Navigation</h2>
         <p className="text-white/50 text-sm">
           Use the sidebar to navigate to <span className="text-emerald-400">Accounts</span> or{' '}
