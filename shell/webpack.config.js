@@ -22,7 +22,7 @@ module.exports = (env, argv) => {
     output: {
       path: path.resolve(__dirname, 'dist'),
       filename: '[name].[contenthash].js',
-      publicPath: isProd ? 'https://mfe-shell.vercel.app/' : 'http://localhost:3000/',
+      publicPath: isProd ? 'https://finance-platform-mfe.vercel.app/' : 'http://localhost:3000/',
       clean: true,
     },
     resolve: {
