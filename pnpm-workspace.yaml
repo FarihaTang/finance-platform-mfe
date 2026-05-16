@@ -1,0 +1,6 @@
+packages:
+  - 'shell'
+  - 'app-accounts'
+  - 'app-transactions'
+  - 'shared-ui'
+  - 'shared-store'
